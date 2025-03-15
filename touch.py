@@ -1,20 +1,23 @@
-import RPi.GPIO as GPIO
+import lgpio
 import time
 
 TOUCH_SENSOR_PIN = 17  # GPIO17 (Pin 11)
+GPIO_CHIP = 0  # Use gpiochip0
 
-# Setup
-GPIO.setmode(GPIO.BCM)  # Use Broadcom pin numbering
-GPIO.setup(TOUCH_SENSOR_PIN, GPIO.IN)  # Set pin as input
+# Open GPIO chip
+h = lgpio.gpiochip_open(GPIO_CHIP)
+
+# Set pin as input (with pull-down resistor)
+lgpio.gpio_claim_input(h, TOUCH_SENSOR_PIN)
 
 print("Touch sensor test started. Press the sensor...")
 
 try:
     while True:
-        if GPIO.input(TOUCH_SENSOR_PIN) == GPIO.HIGH:
+        if lgpio.gpio_read(h, TOUCH_SENSOR_PIN) == 1:
             print("Touch detected!")
         time.sleep(0.1)  # Short delay to avoid excessive logging
 
 except KeyboardInterrupt:
     print("\nTest stopped.")
-    GPIO.cleanup()  # Reset GPIO settings
+    lgpio.gpiochip_close(h)  # Cleanup GPIO
